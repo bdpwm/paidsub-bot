@@ -3,14 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy import text
 from create_bot import engine, AsyncSessionLocal
 from sqlalchemy.exc import NoResultFound
-from db_handler.models import User, create_table_users, Base
-
-async def initialize_users_table():
-    async with AsyncSessionLocal() as session:
-        try:
-            await session.execute(f"SELECT 1 FROM {User.__tablename__} LIMIT 1;")
-        except NoResultFound:
-            await create_table_users()
+from db_handler.models import User, Base
 
 
 async def insert_user(user_data: dict):

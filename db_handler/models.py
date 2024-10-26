@@ -13,7 +13,3 @@ class User(Base):
     refer_id = Column(BigInteger, nullable=True)
     count_refer = Column(Integer, default=0, server_default="0")
     date_reg = Column(TIMESTAMP, default=get_now_time())
-
-async def create_table_users():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
