@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BigInteger, TIMESTAMP
+from sqlalchemy import Column, Integer, String, BigInteger, TIMESTAMP, DATE, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from utils.utils import get_now_time
 
@@ -13,3 +13,6 @@ class User(Base):
     refer_id = Column(BigInteger, nullable=True)
     count_refer = Column(Integer, default=0, server_default="0")
     date_reg = Column(TIMESTAMP, default=get_now_time())
+    subscription_start = Column(DATE, nullable=True)
+    subscription_end = Column(DATE, nullable=True)
+    subscription_status = Column(Boolean, default=False)

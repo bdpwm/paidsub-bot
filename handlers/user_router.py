@@ -3,7 +3,7 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.types import Message
 from create_bot import bot, channel_id, bot_username
-from db_handler.db import get_user_data
+from db_handler.db import get_user_data, subscription_update, insert_user, check_subscription
 from keyboards.kbs import main_kb, profile_kb, back_to_profile_kb
 from utils.utils import get_refer_id, get_now_time
 from aiogram.utils.chat_action import ChatActionSender
@@ -14,7 +14,7 @@ user_router = Router()
 
 
 @user_router.message(CommandStart())
-async def cmd_start(message: Message, command: CommandObject):
+async def start_handler(message: Message, command: CommandObject):
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         user_info = await get_user_data(user_id=message.from_user.id)
 
@@ -29,10 +29,10 @@ async def cmd_start(message: Message, command: CommandObject):
             'refer_id': refer_id,
             'date_reg': get_now_time()
         })
-        response_text = f'{user_info.get("full_name")}, Welcome to channel.'
+        response_text = f'{message.from_user.full_name}, Welcome to bot.'
         if refer_id:
-            response_text = (f'{message.from_user.full_name},'
-                             f'refered by - <b>{refer_id}</b>. {universe_text}')
+            response_text = (f'You was refered by - <b>{refer_id}</b>.')
+            # refer bonuses logic
 
     await message.answer(text=response_text, reply_markup=main_kb(message.from_user.id))
 
@@ -40,7 +40,7 @@ async def cmd_start(message: Message, command: CommandObject):
 @user_router.message(Command('profile'))
 @user_router.message(F.text.contains('My profile'))
 @user_router.message(F.text.contains('Back to Menu'))
-async def get_profile(message: Message):
+async def get_profile_handler(message: Message):
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         user_info = await get_user_data(user_id=message.from_user.id)
         text = (f"Welcome, {message.from_user.full_name}!")
@@ -49,7 +49,7 @@ async def get_profile(message: Message):
 
 @user_router.message(Command('pay'))
 @user_router.message(F.text.contains('Pay subscription'))
-async def pay_command(message: Message):
+async def pay_subscription_handler(message: Message):
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
 
         # payment simulation
@@ -57,6 +57,8 @@ async def pay_command(message: Message):
         # payment simulation
 
         user_id = message.from_user.id
+
+        
         await bot(UnbanChatMember(chat_id=channel_id, user_id=user_id))
         
         invite_link = await bot.create_chat_invite_link(
@@ -66,25 +68,20 @@ async def pay_command(message: Message):
             member_limit=1,
             creates_join_request=False
         )
-
+        
+        await subscription_update(user_id)
         await message.answer(f"Link to private channel: {invite_link.invite_link}\nYou have 5 minutes to activate link!")
-        asyncio.create_task(remove_user_after_delay(user_id, 20))
-
+        
     
 
 
-# test function
-async def remove_user_after_delay(user_id: int, delay: int):
+async def remove_user(user_id: int, delay: int):
     await asyncio.sleep(delay)
     await bot(BanChatMember(chat_id=channel_id, user_id=user_id, revoke_messages=True))
-    print(f"{user_id} has been banned")
-# delete
 
 
-# inv friends handler
-@user_router.message(Command('invite'))
 @user_router.message(F.text.contains('Invite Friends'))
-async def invite_command(message: Message):
+async def invite_friends_handler(message: Message):
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         user_info = await get_user_data(user_id=message.from_user.id)
         text = (f'👉 Username: <code><b>{message.from_user.username}</b></code>\n'
@@ -94,4 +91,20 @@ async def invite_command(message: Message):
                 f'<code>https://t.me/{bot_username}?start={message.from_user.id}</code>')
         await message.answer(text, reply_markup=back_to_profile_kb(message.from_user.id))
 
-# check sub handler
+
+@user_router.message(F.text.contains('Check subscription'))
+async def subscription_check_handler(message: Message):
+    async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
+        user_info = await get_user_data(user_id=message.from_user.id)
+        subscription_active, subscription_end = await check_subscription(user_id=message.from_user.id)
+        subscription_status = "Active" if subscription_active else "Inactive"
+        
+        if subscription_active and subscription_end:
+            subscription_end_str = subscription_end.strftime("%Y-%m-%d")
+        else:
+            subscription_end_str = "N/A"
+        
+        text = (f'📅 Subscription Status: <b>{subscription_status}</b>\n'
+                f'📅 Subscription End Date: <b>{subscription_end_str}</b>\n\n')
+        
+        await message.answer(text, reply_markup=back_to_profile_kb(message.from_user.id))

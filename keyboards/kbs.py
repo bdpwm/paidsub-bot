@@ -14,7 +14,7 @@ def main_kb(user_telegram_id: int):
 
 def profile_kb(user_telegram_id: int):
     kb_list = [
-        [KeyboardButton(text="Check sub")],
+        [KeyboardButton(text="Check subscription")],
         [KeyboardButton(text="Invite Friends")],
         [KeyboardButton(text="Pay subscription")],
     ]
