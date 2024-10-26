@@ -28,6 +28,7 @@ async def cmd_start(message: Message, command: CommandObject):
             'refer_id': refer_id,
             'date_reg': get_now_time()
         })
+        response_text = f'{user_info.get("full_name")}, Welcome to channel.'
         if refer_id:
             response_text = (f'{message.from_user.full_name},'
                              f'refered by - <b>{refer_id}</b>. {universe_text}')
