@@ -16,7 +16,7 @@ load_dotenv()
 scheduler = AsyncIOScheduler(timezone='Europe/Bratislava')
 admins = [int(admin_id) for admin_id in os.getenv('ADMINS').split(',')]
 channel_id = os.getenv('CHANNEL_ID')
-
+bot_username = os.getenv('BOT_USERNAME')
 
 # logging settings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

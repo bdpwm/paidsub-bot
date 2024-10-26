@@ -2,9 +2,9 @@ import asyncio
 from aiogram import Router, F
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.types import Message
-from create_bot import bot, channel_id
+from create_bot import bot, channel_id, bot_username
 from db_handler.db import get_user_data
-from keyboards.kbs import main_kb, profile_kb
+from keyboards.kbs import main_kb, profile_kb, back_to_profile_kb
 from utils.utils import get_refer_id, get_now_time
 from aiogram.utils.chat_action import ChatActionSender
 from aiogram.methods import CreateChatInviteLink, BanChatMember, UnbanChatMember
@@ -39,13 +39,11 @@ async def cmd_start(message: Message, command: CommandObject):
 
 @user_router.message(Command('profile'))
 @user_router.message(F.text.contains('My profile'))
+@user_router.message(F.text.contains('Back to Menu'))
 async def get_profile(message: Message):
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         user_info = await get_user_data(user_id=message.from_user.id)
-        text = (f'👉 Telegram ID: <code><b>{message.from_user.id}</b></code>\n'
-                f'👥 Friends invited: <b>{user_info.get("count_refer")}</b>\n\n'
-                f'🚀 Link to invite your friends: '
-                f'<code>https://t.me/easy_refer_bot?start={message.from_user.id}</code>')
+        text = (f"Welcome, {message.from_user.full_name}!")
     await message.answer(text, reply_markup=profile_kb(message.from_user.id))
 
 
@@ -84,6 +82,16 @@ async def remove_user_after_delay(user_id: int, delay: int):
 
 
 # inv friends handler
-
+@user_router.message(Command('invite'))
+@user_router.message(F.text.contains('Invite Friends'))
+async def invite_command(message: Message):
+    async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
+        user_info = await get_user_data(user_id=message.from_user.id)
+        text = (f'👉 Username: <code><b>{message.from_user.username}</b></code>\n'
+                f'👉 Telegram ID: <code><b>{message.from_user.id}</b></code>\n'
+                f'👥 Friends invited: <b>{user_info.get("count_refer")}</b>\n\n'
+                f'🚀 Link to invite your friends: '
+                f'<code>https://t.me/{bot_username}?start={message.from_user.id}</code>')
+        await message.answer(text, reply_markup=back_to_profile_kb(message.from_user.id))
 
 # check sub handler
