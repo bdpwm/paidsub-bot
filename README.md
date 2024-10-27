@@ -1,11 +1,13 @@
 # Telegram Bot for Paid Subscriptions to Private Telegram Channels
 
 ```
-This project demonstrates a simple Telegram bot on aiogram 3.13.1 framework with PostgreSQL database integration via SQLAlchemy 2.0.36 library and task scheduling via APScheduler 3.10.4 library.
+This project demonstrates a simple Telegram bot on aiogram 3.13.1 framework  
+with PostgreSQL database integration via SQLAlchemy 2.0.36 library  
+and task scheduling via APScheduler 3.10.4 library.
 
 ```
 
-
+The bot includes a simple referral system, allowing users to invite others and earn rewards. When a referred user subscribes, the inviter receives a percentage of the subscription fee, while the referred user gains extra days of access.
 
 ## Usage
 
