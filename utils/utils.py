@@ -1,3 +1,4 @@
+imort
 from datetime import datetime
 import pytz
 
@@ -12,3 +13,10 @@ def get_refer_id(command_args):
         return int(command_args)
     except (TypeError, ValueError):
         return None
+
+
+def load_config(path='config.json'):
+    with open(path, 'r') as file:
+
+        config_data = json.load(file)
+    return config_data

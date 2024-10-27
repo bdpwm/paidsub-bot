@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import text
-from create_bot import engine, AsyncSessionLocal
+from create_bot import engine, AsyncSessionLocal, bonus_days, subscription_cost, subscription_percent
 from sqlalchemy.exc import NoResultFound
 from db_handlers.models import User, Base
 from datetime import date, timedelta
@@ -32,8 +32,6 @@ async def insert_user(user_data: dict):
                 """)
                 await session.execute(refer_stmt, {"refer_id": user_data['refer_id']})
 
-                # TODO: change logic
-                bonus_days = 7
                 user_data['bonus_days'] = bonus_days
                 bonus_stmt = text("""
                     UPDATE users_reg
@@ -41,17 +39,15 @@ async def insert_user(user_data: dict):
                     WHERE user_id = :user_id
                 """)
                 await session.execute(bonus_stmt, user_data)
-
-
-                # TODO: change logic 
-                subscription_cost = 100
-                refer_bonus = int(subscription_cost * 0.1)
+ 
+                refer_bonus = int(subscription_cost * subscription_percent)
                 refer_bonus_stmt = text("""
                     UPDATE users_reg
                     SET refer_balance = refer_balance + :refer_bonus
                     WHERE user_id = :refer_id
                 """)
                 await session.execute(refer_bonus_stmt, {"refer_id": user_data['refer_id'], "refer_bonus": refer_bonus})
+
 
 async def get_user_data(user_id: int):
     async with AsyncSessionLocal() as session:

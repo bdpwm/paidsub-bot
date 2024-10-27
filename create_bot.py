@@ -1,5 +1,6 @@
-import logging
 import os
+import logging
+from utils.utils import load_config
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -17,6 +18,14 @@ scheduler = AsyncIOScheduler(timezone='Europe/Bratislava')
 admins = [int(admin_id) for admin_id in os.getenv('ADMINS').split(',')]
 channel_id = os.getenv('CHANNEL_ID')
 bot_username = os.getenv('BOT_USERNAME')
+
+
+# config
+config = load_config()
+
+bonus_days = config['BONUS_DAYS']
+subscription_cost = config['SUBSCRIPTION_COST']
+subscription_percent = config['SUBSCRIPTION_PERCENT']
 
 # logging settings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -37,7 +46,6 @@ AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_com
 
 async def init_db():
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all) # ! COMMENT LATER
         await conn.run_sync(Base.metadata.create_all)
 
 
