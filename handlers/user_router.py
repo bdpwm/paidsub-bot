@@ -3,7 +3,8 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.types import Message
 from create_bot import bot, channel_id, bot_username
-from db_handler.db import get_user_data, subscription_update, insert_user, check_subscription
+from db_handlers.db_user import get_user_data, insert_user
+from db_handlers.db_subscription import subscription_update, check_subscription
 from keyboards.kbs import main_kb, profile_kb, back_to_profile_kb
 from utils.utils import get_refer_id, get_now_time
 from aiogram.utils.chat_action import ChatActionSender
@@ -81,11 +82,6 @@ async def pay_subscription_handler(message: Message):
         await message.answer(f"Link to private channel: {invite_link.invite_link}\nYou have 5 minutes to activate link!")
         
     
-
-
-async def remove_user(user_id: int, delay: int):
-    await asyncio.sleep(delay)
-    await bot(BanChatMember(chat_id=channel_id, user_id=user_id, revoke_messages=True))
 
 
 @user_router.message(F.text.contains('Invite Friends'))
