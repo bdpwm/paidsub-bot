@@ -32,6 +32,25 @@ async def insert_user(user_data: dict):
                 """)
                 await session.execute(refer_stmt, {"refer_id": user_data['refer_id']})
 
+                bonus_days = 7
+                user_data['bonus_days'] = bonus_days
+                bonus_stmt = text("""
+                    UPDATE users_reg
+                    SET bonus_days = :bonus_days
+                    WHERE user_id = :user_id
+                """)
+                await session.execute(bonus_stmt, user_data)
+
+
+
+                subscription_cost = 100
+                refer_bonus = int(subscription_cost * 0.1)
+                refer_bonus_stmt = text("""
+                    UPDATE users_reg
+                    SET refer_balance = refer_balance + :refer_bonus
+                    WHERE user_id = :refer_id
+                """)
+                await session.execute(refer_bonus_stmt, {"refer_id": user_data['refer_id'], "refer_bonus": refer_bonus})
 
 async def get_user_data(user_id: int):
     async with AsyncSessionLocal() as session:
@@ -81,10 +100,10 @@ async def check_subscription(user_id: int):
                     {"user_id": user_id}
                 )
                 await session.commit()
-                return False, None
-            return True, subscription_end
+                return False, None, bonus_days
+            return True, subscription_end, bonus_days
 
-        return False, None 
+        return False, None, 0
 
 
 async def subscription_update(user_id: int, days=30):
