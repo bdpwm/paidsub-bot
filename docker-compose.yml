@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: .
+    container_name: aiogram-bot
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: always
+    networks:
+      - bot_network
+
+networks:
+  bot_network:
+    driver: bridge
