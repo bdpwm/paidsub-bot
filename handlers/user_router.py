@@ -8,8 +8,9 @@ from db_handlers.db_subscription import subscription_update, check_subscription
 from keyboards.kbs import main_kb, profile_kb, back_to_profile_kb
 from utils.utils import get_refer_id, get_now_time
 from aiogram.utils.chat_action import ChatActionSender
-from aiogram.methods import CreateChatInviteLink, BanChatMember, UnbanChatMember
+from aiogram.methods import UnbanChatMember
 from datetime import timedelta
+import logging
 
 user_router = Router()
 
@@ -63,25 +64,38 @@ async def pay_subscription_handler(message: Message):
         refer_id = user_data.get("refer_id") if user_data else None
 
         if refer_id:
-            await bot.send_message(
-                chat_id=refer_id,
-                text=f"🎉 Your referral {user_id} bought subscription!"
-            )
+            try:
+                await bot.send_message(
+                    chat_id=refer_id,
+                    text=f"🎉 Your referral {user_id} bought subscription!"
+                )
+            except Exception as e:
+                logging.error(f"Failed to notify referrer {refer_id}: {e}")
 
-        await bot(UnbanChatMember(chat_id=channel_id, user_id=user_id))
-        
-        invite_link = await bot.create_chat_invite_link(
-            chat_id=channel_id,
-            name=f"Invite for {user_id}",
-            expire_date=timedelta(minutes=5),
-            member_limit=1,
-            creates_join_request=False
-        )
-        
-        await subscription_update(user_id)
-        await message.answer(f"Link to private channel: {invite_link.invite_link}\nYou have 5 minutes to activate link!")
-        
-    
+        try:
+            await subscription_update(user_id)
+            try:
+                await bot(UnbanChatMember(chat_id=channel_id, user_id=user_id))
+            except Exception as e:
+                logging.warning(f"Failed to unban user {user_id}: {e}")
+            
+            try:
+                invite_link = await bot.create_chat_invite_link(
+                    chat_id=channel_id,
+                    name=f"Invite for {user_id}",
+                    expire_date=timedelta(minutes=5),
+                    member_limit=1,
+                    creates_join_request=False
+                )
+                
+                await message.answer(f"Link to private channel: {invite_link.invite_link}\nYou have 5 minutes to activate link!")
+            except Exception as e:
+                logging.error(f"Failed to create invite link: {e}")
+                await message.answer("Subscription activated, but couldn't create invite link. Please contact support.")
+                
+        except Exception as e:
+            logging.error(f"Payment processing error: {e}")
+            await message.answer("There was an error processing your payment. Please contact support.")
 
 
 @user_router.message(F.text.contains('Invite Friends'))
