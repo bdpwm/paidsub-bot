@@ -74,7 +74,7 @@ BONUS_DAYS=3                 # Bonus days for referrals
    - ✅ Block users
    - ✅ Invite via link
 
-3. **Verify permissions** with the `/admin_check_channel` command
+3. **Verify permissions** with the `/admin_check_channel` command (as admin sure)
 
 
 ### P.S.
